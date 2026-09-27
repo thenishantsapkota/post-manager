@@ -65,24 +65,32 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain/api/cron
 
 ## Hosting on a Raspberry Pi
 
-Works on a Pi 4 or Pi 5 (2 GB+ RAM) running **64-bit Raspberry Pi OS**. The Pi only needs outbound internet: images are uploaded straight to Facebook, so nothing has to reach the Pi from outside.
+Works on any Pi with **64-bit Raspberry Pi OS**, including a Pi Zero 2 W. The Pi only runs the app: it's built on your computer and pushed over SSH, and the Pi installs just the three runtime packages (image rendering and the database driver). The Pi only needs outbound internet, since images are uploaded straight to Facebook.
+
+**One-time setup on the Pi:**
 
 ```bash
-# On the Pi
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt install -y nodejs git
-git clone <your-repo-url> ~/damak-banda-auto-posts && cd ~/damak-banda-auto-posts
-npm ci                     # installs the ARM builds of canvas and libSQL
-cp .env.example .env && nano .env   # set ADMIN_PASSWORD and SESSION_SECRET
-npm run build
-sudo cp deploy/damak-banda.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable --now damak-banda
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt install -y nodejs rsync
+mkdir -p ~/damak-banda-auto-posts && cd ~/damak-banda-auto-posts
+nano .env        # ADMIN_PASSWORD=... and SESSION_SECRET=... (openssl rand -hex 32)
 ```
 
-Open `http://<pi-ip>:3000` from any device on your network. After code changes, run `deploy/update.sh`.
+**On your computer:**
 
-- Run `npm ci` **on the Pi**. Don't copy `node_modules` from a Mac; native modules are per-platform.
+```bash
+ssh-copy-id nishant@raspberrypi.local     # once, so deploys don't ask for a password
+deploy/update.sh                          # build here, push, install runtime deps, (re)start
+deploy/update.sh --with-data              # also replace the Pi's data with this computer's
+```
+
+`deploy/update.sh` is a shortcut for `deploy/push-to-pi.sh`. It installs the systemd service with the Pi's own user and folder, restarts it, and prints the service log if it fails to start. Change the target with `PI_HOST=user@host PI_DIR=folder deploy/update.sh`.
+
+Open `http://raspberrypi.local:3000` from any device on your network.
+
+- The Pi's project folder is deploy-only: don't `git pull`, `npm ci` or build there.
 - Keep the clock synced (on by default: `timedatectl` should show "System clock synchronized: yes"). Schedules are computed in Nepal time regardless of the Pi's time zone.
-- Back up `./data` (the database and images). An SSD instead of the SD card is more durable.
+- Back up `~/damak-banda-auto-posts/data` (the database and images). An SSD instead of the SD card is more durable.
+- Logs: `journalctl -u damak-banda -f`.
 - To manage it away from home, use [Tailscale](https://tailscale.com) (private) or a Cloudflare Tunnel. Avoid port-forwarding the admin panel.
 
 ## Project layout

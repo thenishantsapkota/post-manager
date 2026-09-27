@@ -1,0 +1,27 @@
+# systemd unit for running Damak Banda Auto Poster on a Raspberry Pi (or any Linux box).
+# Install:
+#   sudo cp deploy/damak-banda.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now damak-banda
+# Logs:
+#   journalctl -u damak-banda -f
+
+[Unit]
+Description=Damak Banda Auto Poster
+After=network-online.target time-sync.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Change these if your user or folder differ.
+User=pi
+WorkingDirectory=/home/pi/damak-banda-auto-posts
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/node --env-file-if-exists=.env .output/server/index.mjs
+Restart=always
+RestartSec=5
+# Rendering 13 rashifal images at once needs some headroom; cap it on small Pis.
+Environment=NODE_OPTIONS=--max-old-space-size=512
+
+[Install]
+WantedBy=multi-user.target

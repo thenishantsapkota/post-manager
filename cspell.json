@@ -1,0 +1,7 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": ["automations", "automation", "rashifal", "rashis", "rashi", "patro", "nepalipatro", "damak", "banda", "hamro", "tithi", "nanoid", "croner", "libsql", "napi", "tanstack", "nitro"],
+  "ignoreRegExpList": ["[\\u0900-\\u097F\\u200c\\u200d]+"],
+  "ignorePaths": ["node_modules", "drizzle", "data", "src/routeTree.gen.ts"]
+}

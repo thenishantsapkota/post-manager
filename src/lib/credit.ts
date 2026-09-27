@@ -27,3 +27,20 @@ export function withCaptionCredit(caption: string, author: string): string {
   const credit = captionCredit(author)
   return caption.includes(credit) ? caption : `${caption.trimEnd()}\n\n${credit}`
 }
+
+// Weather data comes from Open-Meteo (CC BY 4.0), which requires attribution.
+export const WEATHER_SOURCE = 'Open-Meteo.com'
+
+export function weatherImageCredit(): string {
+  return `मौसम तथ्यांक: ${WEATHER_SOURCE} · पूर्वानुमान फरक पर्न सक्छ`
+}
+
+export function weatherCaptionCredit(): string {
+  return `🌦️ मौसम तथ्यांक: Weather data by ${WEATHER_SOURCE} (CC BY 4.0) — https://open-meteo.com`
+}
+
+/** Ensures a weather caption ends with the data credit. */
+export function withWeatherCredit(caption: string): string {
+  const credit = weatherCaptionCredit()
+  return caption.includes(credit) ? caption : `${caption.trimEnd()}\n\n${credit}`
+}

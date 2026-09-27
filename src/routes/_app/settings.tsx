@@ -11,7 +11,7 @@ import {
   saveSettingsFn,
   testConnectionFn,
 } from '#/functions/settings.functions'
-import { captionCredit } from '#/lib/credit'
+import { captionCredit, weatherCaptionCredit } from '#/lib/credit'
 
 export const Route = createFileRoute('/_app/settings')({
   loader: () => getSettingsFn(),
@@ -27,6 +27,7 @@ function SettingsPage() {
         <FacebookCard s={s} />
         <BrandingCard s={s} />
         <CaptionCard s={s} />
+        <WeatherCard s={s} />
         <SchedulerCard s={s} />
       </div>
     </>
@@ -269,6 +270,60 @@ function SchedulerCard({ s }: { s: S }) {
         <p className="text-muted">
           Cron endpoint: {s.cronConfigured ? <Badge tone="ok">CRON_SECRET set</Badge> : <Badge>off (set CRON_SECRET to enable)</Badge>}
         </p>
+      </div>
+    </Card>
+  )
+}
+
+function WeatherCard({ s }: { s: S }) {
+  const router = useRouter()
+  const { busy, run } = useAction()
+  const [placeNp, setPlaceNp] = useState(s.weatherPlaceNp)
+  const [placeEn, setPlaceEn] = useState(s.weatherPlaceEn)
+  const [lat, setLat] = useState(s.weatherLat)
+  const [lon, setLon] = useState(s.weatherLon)
+  const [caption, setCaption] = useState(s.weatherCaption)
+  const [hashtags, setHashtags] = useState(s.weatherHashtags)
+
+  return (
+    <Card>
+      <CardHeader title="Weather" subtitle="Location and caption for weather posts." />
+      <div className="space-y-4 p-5">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Place (Nepali)"><Input value={placeNp} onChange={(e) => setPlaceNp(e.target.value)} /></Field>
+          <Field label="Place (English)"><Input value={placeEn} onChange={(e) => setPlaceEn(e.target.value)} /></Field>
+          <Field label="Latitude"><Input value={lat} onChange={(e) => setLat(e.target.value)} inputMode="decimal" /></Field>
+          <Field label="Longitude"><Input value={lon} onChange={(e) => setLon(e.target.value)} inputMode="decimal" /></Field>
+        </div>
+        <p className="text-[13px] text-muted">Defaults to Damak, Jhapa (26.6641, 87.6989).</p>
+        <Field
+          label="Caption template"
+          hint="Placeholders: {slot_emoji} {slot_title} {place} {date_bs} {weekday} {summary} {details} {condition} {temp} {high} {low} {rain_chance} {humidity} {hashtags} {brand}"
+        >
+          <Textarea rows={7} value={caption} onChange={(e) => setCaption(e.target.value)} className="font-mono text-sm" />
+        </Field>
+        <Field label="Hashtags"><Input value={hashtags} onChange={(e) => setHashtags(e.target.value)} /></Field>
+        <div className="rounded-lg bg-surface-2 p-3">
+          <p className="mb-1 text-[13px] font-semibold text-muted">Always added at the end (required credit):</p>
+          <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{weatherCaptionCredit()}</pre>
+        </div>
+        <Button
+          variant="primary"
+          loading={busy === 'save'}
+          onClick={async () => {
+            await run(
+              'save',
+              () =>
+                saveSettingsFn({
+                  data: { weatherPlaceNp: placeNp, weatherPlaceEn: placeEn, weatherLat: lat, weatherLon: lon, weatherCaption: caption, weatherHashtags: hashtags },
+                }),
+              'Weather settings saved',
+            )
+            await router.invalidate()
+          }}
+        >
+          Save weather settings
+        </Button>
       </div>
     </Card>
   )

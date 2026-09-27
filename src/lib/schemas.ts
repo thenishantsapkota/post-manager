@@ -38,7 +38,7 @@ export const textLayerSchema = z.object({
 export const imageLayerSchema = z.object({
   ...base,
   type: z.literal('image'),
-  source: z.enum(['logo', 'slot', 'media']),
+  source: z.enum(['logo', 'slot', 'media', 'weather_icon']),
   slot: z.string().max(40).regex(/^[a-zA-Z0-9_]*$/),
   mediaId: z.string().max(32),
   fit: z.enum(['cover', 'contain']),
@@ -61,7 +61,7 @@ export const layerSchema = z.discriminatedUnion('type', [textLayerSchema, imageL
 
 export const templateDataSchema = z.object({
   name: z.string().trim().min(1).max(80),
-  kind: z.enum(['general', 'rashifal_sign', 'rashifal_cover']),
+  kind: z.enum(['general', 'rashifal_sign', 'rashifal_cover', 'weather']),
   width: z.number().int().min(100).max(4000),
   height: z.number().int().min(100).max(4000),
   backgroundMediaId: z.string().max(32).nullable(),
@@ -76,6 +76,7 @@ export const templateInputSchema = z.object({
   vars: stringMap,
   slots: z.record(z.string().max(40), z.string().max(32)),
   signKey: z.string().optional(),
+  weather: z.object({ icon: z.string().max(20), isDay: z.boolean() }).optional(),
 })
 
 export const cardSpecSchema = z.object({
@@ -119,6 +120,7 @@ export const automationConfigSchema = z.discriminatedUnion('kind', [
     collection: z.string().trim().min(1).max(60),
     order: z.enum(['sequential', 'random']),
   }),
+  z.object({ kind: z.literal('weather'), slot: z.enum(['morning', 'afternoon', 'evening']) }),
 ])
 
 export const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD')

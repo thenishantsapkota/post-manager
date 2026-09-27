@@ -43,9 +43,38 @@ export const RASHIFAL_VARS: VarInfo[] = [
 
 export const RASHIFAL_COVER_VARS: VarInfo[] = RASHIFAL_COMMON
 
+export const WEATHER_VARS: VarInfo[] = [
+  { key: 'place', label: 'Place', sample: 'दमक' },
+  { key: 'slot_title', label: 'Part of day title', sample: 'बिहानको मौसम' },
+  { key: 'condition', label: 'Condition', sample: 'आंशिक बदली' },
+  { key: 'temp', label: 'Temperature now', sample: '२८°' },
+  { key: 'feels_like', label: 'Feels like', sample: '३१°' },
+  { key: 'high', label: 'Today high', sample: '३२°' },
+  { key: 'low', label: 'Low (tonight in evening)', sample: '२४°' },
+  { key: 'rain_chance', label: 'Rain chance', sample: '४०%' },
+  { key: 'humidity', label: 'Humidity', sample: '८०%' },
+  { key: 'wind', label: 'Wind', sample: '८ किमी/घण्टा' },
+  { key: 'sunrise', label: 'Sunrise', sample: 'बिहान ५:४४' },
+  { key: 'sunset', label: 'Sunset', sample: 'बेलुका ५:४५' },
+  { key: 'uv', label: 'UV index', sample: '७' },
+  { key: 'aqi', label: 'Air quality (US AQI)', sample: '७३' },
+  { key: 'aqi_label', label: 'Air quality label', sample: 'मध्यम' },
+  { key: 'summary', label: 'Summary sentence', sample: 'आज दमकमा आंशिक बदली रहने देखिन्छ। अधिकतम तापक्रम ३२° र न्यूनतम २४° सेल्सियस रहने अनुमान छ।' },
+  { key: 'tomorrow_condition', label: 'Tomorrow (evening)', sample: 'सफा आकाश' },
+  { key: 'tomorrow_high', label: 'Tomorrow high', sample: '३२°' },
+  { key: 'tomorrow_low', label: 'Tomorrow low', sample: '२४°' },
+  { key: 'tomorrow_rain_chance', label: 'Tomorrow rain chance', sample: '१०%' },
+  {
+    key: 'credit',
+    label: 'Weather data credit (required — added automatically if you leave it out)',
+    sample: 'मौसम तथ्यांक: Open-Meteo.com · पूर्वानुमान फरक पर्न सक्छ',
+  },
+]
+
 export function builtinVars(kind: TemplateKind): VarInfo[] {
   if (kind === 'rashifal_sign') return [...AUTO_VARS, ...RASHIFAL_VARS]
   if (kind === 'rashifal_cover') return [...AUTO_VARS, ...RASHIFAL_COVER_VARS]
+  if (kind === 'weather') return [...AUTO_VARS, ...WEATHER_VARS]
   return AUTO_VARS
 }
 

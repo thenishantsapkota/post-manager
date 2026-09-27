@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { Bot, Pencil, Play, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { Bot, CloudSun, Pencil, Play, Plus, Sparkles, Trash2 } from 'lucide-react'
 import { Badge, Button, Card, EmptyState, Field, Input, Modal, PageHeader, Select, Toggle, cx, useAction } from '#/components/ui'
 import {
   deleteAutomationFn,
@@ -13,6 +13,8 @@ import {
 import { formatNpt, formatRelative } from '#/lib/time'
 import { PERIOD_LABELS, RASHIFAL_PERIODS } from '#/lib/types'
 import type { AutomationConfig, RashifalPeriod } from '#/lib/types'
+import { SLOT_INFO, WEATHER_SLOTS } from '#/lib/weather'
+import type { WeatherSlot } from '#/lib/weather'
 import type { Automation } from '#/server/db/schema'
 
 export const Route = createFileRoute('/_app/automations')({
@@ -53,6 +55,7 @@ function describe(cron: string) {
 
 function describeConfig(c: AutomationConfig) {
   if (c.kind === 'rashifal') return `${PERIOD_LABELS[c.period]} rashifal · ${c.period === 'Y' || c.format === 'cover' ? 'cover + caption' : 'album of 13 images'}`
+  if (c.kind === 'weather') return `${SLOT_INFO[c.slot].en} weather for Damak`
   return `From “${c.collection}” · ${c.order}`
 }
 
@@ -85,6 +88,16 @@ const PRESETS: Array<{ label: string; hint: string; draft: Omit<Draft, 'id'> }> 
     hint: 'Checks daily, posts once per new year',
     draft: { name: 'Yearly rashifal', enabled: true, schedule: { mode: 'daily', time: '09:00' }, config: { kind: 'rashifal', period: 'Y', format: 'cover' } },
   },
+  ...WEATHER_SLOTS.map((slot) => ({
+    label: `${SLOT_INFO[slot].en} weather`,
+    hint: `Every day at ${SLOT_INFO[slot].defaultTime}`,
+    draft: {
+      name: `${SLOT_INFO[slot].en} weather`,
+      enabled: true,
+      schedule: { mode: 'daily' as const, time: SLOT_INFO[slot].defaultTime },
+      config: { kind: 'weather' as const, slot },
+    },
+  })),
 ]
 
 function AutomationsPage() {
@@ -111,25 +124,27 @@ function AutomationsPage() {
         }
       />
 
-      {automations.length === 0 && (
-        <div className="mb-6">
-          <p className="mb-3 text-sm font-semibold text-muted">Quick start</p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {PRESETS.map((p) => (
+      <div className="mb-6">
+        <p className="mb-3 text-sm font-semibold text-muted">{automations.length === 0 ? 'Quick start' : 'Add from a preset'}</p>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-7">
+          {PRESETS.map((p) => {
+            const Icon = p.draft.config.kind === 'weather' ? CloudSun : Sparkles
+            const exists = automations.some((a) => JSON.stringify(a.config) === JSON.stringify(p.draft.config))
+            return (
               <button
                 key={p.label}
                 type="button"
                 onClick={() => setDraft({ id: null, ...p.draft })}
-                className="rounded-xl border border-border bg-surface p-4 text-left transition-colors hover:border-accent"
+                className="rounded-xl border border-border bg-surface p-3.5 text-left transition-colors hover:border-accent"
               >
-                <Sparkles className="mb-2 size-5 text-accent" />
-                <p className="font-bold">{p.label}</p>
-                <p className="text-sm text-muted">{p.hint}</p>
+                <Icon className="mb-2 size-5 text-accent" />
+                <p className="font-bold leading-tight">{p.label}</p>
+                <p className="mt-0.5 text-[13px] leading-snug text-muted">{exists ? 'Already set up' : p.hint}</p>
               </button>
-            ))}
-          </div>
+            )
+          })}
         </div>
-      )}
+      </div>
 
       <Card>
         {automations.length === 0 ? (
@@ -257,10 +272,17 @@ function AutomationModal({ draft, collections, onClose, onSaved }: { draft: Draf
           <Select
             value={cfg.kind}
             onChange={(e) =>
-              setCfg(e.target.value === 'rashifal' ? { kind: 'rashifal', period: 'D', format: 'album' } : { kind: 'library', collection: collections[0] ?? '', order: 'sequential' })
+              setCfg(
+                e.target.value === 'rashifal'
+                  ? { kind: 'rashifal', period: 'D', format: 'album' }
+                  : e.target.value === 'weather'
+                    ? { kind: 'weather', slot: 'morning' }
+                    : { kind: 'library', collection: collections[0] ?? '', order: 'sequential' },
+              )
             }
           >
             <option value="rashifal">Rashifal from Nepali Patro</option>
+            <option value="weather">Weather for Damak</option>
             <option value="library">An item from the content library</option>
           </Select>
         </Field>
@@ -281,6 +303,24 @@ function AutomationModal({ draft, collections, onClose, onSaved }: { draft: Draf
             <p className="text-[13px] leading-snug text-muted sm:col-span-2">
               Each set is posted once. If Nepali Patro hasn't published yet, it retries every 15 minutes (up to 6 hours).
               For monthly and yearly, a daily check is fine: it only posts when a new set appears. Credit to Nepali Patro is always included.
+            </p>
+          </div>
+        ) : cfg.kind === 'weather' ? (
+          <div className="space-y-2">
+            <Field label="Part of day">
+              <Select
+                value={cfg.slot}
+                onChange={(e) => {
+                  const slot = e.target.value as WeatherSlot
+                  setD({ ...d, config: { kind: 'weather', slot }, schedule: d.schedule.mode === 'custom' ? d.schedule : { ...d.schedule, time: SLOT_INFO[slot].defaultTime } })
+                }}
+              >
+                {WEATHER_SLOTS.map((s) => <option key={s} value={s}>{SLOT_INFO[s].en} · {SLOT_INFO[s].np}</option>)}
+              </Select>
+            </Field>
+            <p className="text-[13px] leading-snug text-muted">
+              A fresh forecast is fetched at posting time. Morning shows today's outlook, afternoon the current conditions,
+              evening tonight and tomorrow. Credit to Open-Meteo is always included.
             </p>
           </div>
         ) : (

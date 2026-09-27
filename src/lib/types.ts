@@ -13,7 +13,7 @@ export type ThemeKey = (typeof THEME_KEYS)[number]
 // Coordinates are in template pixels (the template's own width/height).
 // ---------------------------------------------------------------------------
 
-export type TemplateKind = 'general' | 'rashifal_sign' | 'rashifal_cover'
+export type TemplateKind = 'general' | 'rashifal_sign' | 'rashifal_cover' | 'weather'
 
 interface BaseLayer {
   id: string
@@ -52,8 +52,8 @@ export interface TextLayer extends BaseLayer {
 
 export interface ImageLayer extends BaseLayer {
   type: 'image'
-  /** logo: brand logo from settings · slot: filled per post · media: fixed image */
-  source: 'logo' | 'slot' | 'media'
+  /** logo: brand logo from settings · slot: filled per post · media: fixed image · weather_icon: current weather icon */
+  source: 'logo' | 'slot' | 'media' | 'weather_icon'
   /** Field name when source is "slot", e.g. "photo". */
   slot: string
   mediaId: string
@@ -93,6 +93,8 @@ export interface TemplateInput {
   slots: Record<string, string>
   /** For rashifal_sign templates: picks the per-sign background. */
   signKey?: string
+  /** For weather templates: the icon drawn by weather_icon layers. */
+  weather?: { icon: string; isDay: boolean }
 }
 
 /**
@@ -180,9 +182,15 @@ export interface LibraryAutomationConfig {
   order: 'sequential' | 'random'
 }
 
+export interface WeatherAutomationConfig {
+  kind: 'weather'
+  slot: 'morning' | 'afternoon' | 'evening'
+}
+
 export type AutomationConfig =
   | RashifalAutomationConfig
   | LibraryAutomationConfig
+  | WeatherAutomationConfig
 
 export type PostStatus =
   | 'draft'

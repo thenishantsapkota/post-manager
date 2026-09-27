@@ -26,6 +26,9 @@ export const config = {
   get rashifalApiUrl() {
     return process.env.RASHIFAL_API_URL ?? 'https://nepalipatro.com.np/rashifal/getv5/type/dwmy'
   },
+  get openMeteoKey() {
+    return process.env.OPEN_METEO_API_KEY ?? ''
+  },
   get isProduction() {
     return process.env.NODE_ENV === 'production'
   },

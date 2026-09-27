@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import {
   Bot,
   CalendarClock,
+  CloudSun,
   Images,
   LayoutDashboard,
   Library,
@@ -30,6 +31,7 @@ const NAV = [
   { to: '/compose', label: 'Compose', icon: PenSquare },
   { to: '/posts', label: 'Posts', icon: CalendarClock },
   { to: '/rashifal', label: 'Rashifal', icon: Sparkles },
+  { to: '/weather', label: 'Weather', icon: CloudSun },
   { to: '/templates', label: 'Templates', icon: Palette },
   { to: '/media', label: 'Media', icon: Images },
   { to: '/library', label: 'Library', icon: Library },

@@ -10,6 +10,7 @@ import { createPost } from './posts'
 import { buildRashifalPost, currentSet, setKey, syncRashifal } from './rashifal'
 import { logActivity } from './settings'
 import { renderCardToMedia } from './templates'
+import { buildWeatherPost } from './weather-posts'
 
 /** Runs later than this after their slot are skipped instead of posted late. */
 const MAX_LATENESS_MS = 2 * 60 * 60_000
@@ -17,8 +18,18 @@ const MAX_LATENESS_MS = 2 * 60 * 60_000
 const MAX_WAIT_MS = 6 * 60 * 60_000
 const RETRY_EVERY_MS = 15 * 60_000
 
+/** Weather posts are only useful near their slot, so stop retrying sooner. */
+const WEATHER_MAX_WAIT_MS = 60 * 60_000
+
 /** Content isn't available yet; try again shortly. */
-class RetryLater extends Error {}
+class RetryLater extends Error {
+  constructor(
+    message: string,
+    readonly maxWaitMs = MAX_WAIT_MS,
+  ) {
+    super(message)
+  }
+}
 /** Nothing to do this time (e.g. this week's rashifal was already posted). */
 class Skip extends Error {}
 
@@ -109,6 +120,18 @@ async function runAutomation(a: Automation, opts: { force: boolean }): Promise<s
     return post.id
   }
 
+  if (cfg.kind === 'weather') {
+    let built
+    try {
+      built = await buildWeatherPost(cfg.slot, { force: true })
+    } catch (err) {
+      // Weather goes stale fast: retry briefly, then give up for this slot.
+      throw new RetryLater((err as Error).message, WEATHER_MAX_WAIT_MS)
+    }
+    const post = await createPost({ ...built, status: 'scheduled', source: 'automation', automationId: a.id })
+    return post.id
+  }
+
   const item = await pickLibraryItem(cfg.collection, cfg.order)
   if (!item) throw new Error(`Library collection “${cfg.collection}” has no active items.`)
   const mediaIds: string[] = []
@@ -190,7 +213,7 @@ export async function runDueAutomations() {
       const message = (err as Error).message
       if (err instanceof Skip) {
         await record(a, 'skipped', message)
-      } else if (err instanceof RetryLater && now - slot < MAX_WAIT_MS) {
+      } else if (err instanceof RetryLater && now - slot < err.maxWaitMs) {
         const retryAt = now + RETRY_EVERY_MS
         // Retry soon, unless the next regular slot comes first.
         if (!upcoming || retryAt < upcoming) {

@@ -48,7 +48,7 @@ export const posts = sqliteTable(
 export const automations = sqliteTable('automations', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
-  kind: text('kind', { enum: ['rashifal', 'library'] }).notNull(),
+  kind: text('kind', { enum: ['rashifal', 'library', 'weather'] }).notNull(),
   cron: text('cron').notNull(),
   enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
   config: text('config', { mode: 'json' }).$type<AutomationConfig>().notNull(),

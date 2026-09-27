@@ -7,6 +7,7 @@ Built with TanStack Start (React, Nitro node server), SQLite (Drizzle + libSQL) 
 ## Features
 
 - **Rashifal (राशिफल)**: fetched automatically from Nepali Patro for all four periods. You can edit the text, preview the exact images, and post as an album (cover + 12 sign images) or as a single cover with the full text in the caption.
+- **Weather for Damak**: morning, afternoon and evening posts from Open-Meteo: temperature, conditions, rain chance, humidity, wind, sunrise and sunset, air quality and an hourly outlook, all in Nepali. Automations fetch a fresh forecast at posting time.
 - **Your own templates**: upload a design, then place text, photo, logo and box layers on it with a drag-and-drop editor. Variables like `{sign_np}`, `{rashifal}` and `{date_bs}` are filled in automatically. Rashifal sign templates can use a different background per rashi. "Exact preview" renders with the same engine that makes the posts.
 - **Image editing**: crop (square, 4:5 feed, 9:16 story, landscape, free), rotate, flip, brightness, contrast, saturation, blur, black & white, sepia, resize, and a logo watermark. Edits always save a new copy.
 - **Composer**: caption, multiple images (posted as one album), designed cards, and a Facebook-style preview. Post now, schedule in Nepal time, or save a draft.
@@ -22,6 +23,8 @@ Rashifal content belongs to **Nepali Patro (nepalipatro.com.np)** and is used wi
 - Every Rashifal caption ends with the credit block and the astrologer's name, even if the caption template leaves it out.
 
 Please keep it that way. The logic lives in `src/lib/credit.ts`.
+
+Weather data comes from [Open-Meteo](https://open-meteo.com) under CC BY 4.0, which also requires attribution. Every weather image and caption carries an Open-Meteo credit, enforced the same way.
 
 ## Getting started
 

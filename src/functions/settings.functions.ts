@@ -39,6 +39,12 @@ export const saveSettingsFn = createServerFn({ method: 'POST' })
       logoMediaId: z.string().max(32).optional(),
       hashtags: z.string().max(500).optional(),
       rashifalCaption: z.string().max(5000).optional(),
+      weatherPlaceNp: z.string().trim().min(1).max(60).optional(),
+      weatherPlaceEn: z.string().trim().min(1).max(60).optional(),
+      weatherLat: z.string().trim().regex(/^-?\d{1,2}(\.\d+)?$/, 'Latitude must be a number').optional(),
+      weatherLon: z.string().trim().regex(/^-?\d{1,3}(\.\d+)?$/, 'Longitude must be a number').optional(),
+      weatherCaption: z.string().max(5000).optional(),
+      weatherHashtags: z.string().max(500).optional(),
     }),
   )
   .handler(async ({ data }) => {

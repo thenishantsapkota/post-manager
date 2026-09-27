@@ -538,7 +538,7 @@ function LayerView({ layer, vars, showNames }: { layer: Layer; vars: Record<stri
       <img src={src} alt="" draggable={false} className="size-full" style={{ ...style, objectFit: layer.fit }} />
     ) : (
       <div className="grid size-full place-items-center bg-white/25 font-bold text-white" style={{ ...style, fontSize: Math.max(16, Math.min(layer.w, layer.h) / 8) }}>
-        {layer.source === 'logo' ? 'logo' : `{${layer.slot}}`}
+        {layer.source === 'logo' ? 'logo' : layer.source === 'weather_icon' ? '☀ weather' : `{${layer.slot}}`}
       </div>
     )
   }
@@ -708,6 +708,7 @@ function ImageFields({ layer, onChange, onPick }: { layer: ImageLayer; onChange:
           <option value="slot">Photo slot (chosen per post)</option>
           <option value="logo">Page logo (from Settings)</option>
           <option value="media">Fixed image</option>
+          <option value="weather_icon">Weather icon (changes with the forecast)</option>
         </Select>
         {layer.source === 'slot' && (
           <Field label="Slot name" hint="Shown as a field when this template is used.">

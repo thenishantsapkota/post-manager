@@ -6,6 +6,8 @@ import { getMedia, readMediaFile } from '../storage'
 import { ensureFonts, fitText, font, roundRect, wrap } from './canvas'
 import type { Brand } from './canvas'
 import type { RenderedImage } from './templates'
+import { drawWeatherIcon } from './weather-icons'
+import type { WeatherIconKey } from '#/lib/weather'
 
 /** Longest side of the output; larger templates are scaled down to this. */
 const MAX_OUTPUT = 2400
@@ -119,6 +121,12 @@ async function drawImageLayer(
   input: TemplateInput,
   brand: Brand,
 ) {
+  if (layer.source === 'weather_icon') {
+    const size = Math.min(layer.w, layer.h)
+    const icon = (input.weather?.icon ?? 'partly') as WeatherIconKey
+    drawWeatherIcon(ctx, icon, input.weather?.isDay ?? true, layer.x + (layer.w - size) / 2, layer.y + (layer.h - size) / 2, size)
+    return
+  }
   let img: Image | null | undefined
   if (layer.source === 'logo') img = brand.logo
   else if (layer.source === 'media') img = await mediaImage(layer.mediaId)

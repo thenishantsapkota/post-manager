@@ -1,5 +1,5 @@
 import { newLayer } from './template-vars'
-import type { Layer, TemplateData, TemplateKind, TextLayer } from './types'
+import type { ImageLayer, Layer, TemplateData, TemplateKind, TextLayer } from './types'
 
 export const SIZE_PRESETS = [
   { label: 'Portrait 4:5 (1080×1350) — best for feed', w: 1080, h: 1350 },
@@ -12,6 +12,7 @@ export const KIND_LABELS: Record<TemplateKind, string> = {
   general: 'General post',
   rashifal_sign: 'Rashifal — sign image',
   rashifal_cover: 'Rashifal — cover',
+  weather: 'Weather',
 }
 
 function text(tpl: Pick<TemplateData, 'width' | 'height'>, patch: Partial<TextLayer>): TextLayer {
@@ -38,6 +39,28 @@ export function starterLayers(kind: TemplateKind, w: number, h: number, hasBackg
       text(t, { name: 'Heading', text: '{heading}', x: px(0.08, w), y: px(0.3, h), w: px(0.84, w), h: px(0.16, h), fontSize: px(0.12, w), minFontSize: px(0.06, w), weight: 800, shadow: true }),
       text(t, { name: 'Subtitle', text: '{subtitle}', x: px(0.08, w), y: px(0.47, h), w: px(0.84, w), h: px(0.08, h), fontSize: px(0.055, w), minFontSize: px(0.03, w), weight: 700 }),
       text(t, { name: 'Credit', text: '{credit}', x: px(0.05, w), y: px(0.88, h), w: px(0.9, w), h: px(0.04, h), fontSize: px(0.022, w), minFontSize: px(0.015, w), weight: 700 }),
+    ]
+  }
+  if (kind === 'weather') {
+    const icon: ImageLayer = {
+      ...(newLayer('image', t) as ImageLayer),
+      name: 'Weather icon',
+      source: 'weather_icon',
+      fit: 'contain',
+      x: px(0.08, w),
+      y: px(0.15, h),
+      w: px(0.3, w),
+      h: px(0.3, w),
+      radius: 0,
+    }
+    return [
+      text(t, { name: 'Title', text: '{slot_title} · {place}', x: px(0.08, w), y: px(0.05, h), w: px(0.84, w), h: px(0.07, h), fontSize: px(0.045, w), minFontSize: px(0.03, w), weight: 800, shadow: true }),
+      icon,
+      text(t, { name: 'Temperature', text: '{temp}', x: px(0.45, w), y: px(0.15, h), w: px(0.47, w), h: px(0.16, h), fontSize: px(0.16, w), minFontSize: px(0.08, w), weight: 800, shadow: true }),
+      text(t, { name: 'Condition', text: '{condition}', x: px(0.45, w), y: px(0.31, h), w: px(0.47, w), h: px(0.06, h), fontSize: px(0.045, w), minFontSize: px(0.03, w), weight: 700 }),
+      text(t, { name: 'Summary', text: '{summary}', x: px(0.08, w), y: px(0.45, h), w: px(0.84, w), h: px(0.2, h), fontSize: px(0.04, w), minFontSize: px(0.022, w), weight: 400, align: 'left', bgColor: hasBackground ? '' : 'rgba(0,0,0,0.3)', padding: px(0.03, w), bgRadius: px(0.03, w), shadow: hasBackground }),
+      text(t, { name: 'Details', text: 'अधिकतम {high} · न्यूनतम {low}\nवर्षा {rain_chance} · आर्द्रता {humidity}', x: px(0.08, w), y: px(0.68, h), w: px(0.84, w), h: px(0.14, h), fontSize: px(0.04, w), minFontSize: px(0.025, w), weight: 700 }),
+      text(t, { name: 'Credit', text: '{credit}', x: px(0.05, w), y: px(0.9, h), w: px(0.9, w), h: px(0.04, h), fontSize: px(0.022, w), minFontSize: px(0.015, w), weight: 700 }),
     ]
   }
   return [

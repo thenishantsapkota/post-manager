@@ -19,6 +19,7 @@ import { Route as AppMediaRouteImport } from './routes/_app/media'
 import { Route as AppPostsRouteImport } from './routes/_app/posts'
 import { Route as AppRashifalRouteImport } from './routes/_app/rashifal'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppWeatherRouteImport } from './routes/_app/weather'
 import { Route as ApiCronRouteImport } from './routes/api/cron'
 import { Route as AppTemplatesIndexRouteImport } from './routes/_app/templates.index'
 import { Route as AppTemplatesIdRouteImport } from './routes/_app/templates.$id'
@@ -72,6 +73,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWeatherRoute = AppWeatherRouteImport.update({
+  id: '/weather',
+  path: '/weather',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiCronRoute = ApiCronRouteImport.update({
   id: '/api/cron',
   path: '/api/cron',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/posts': typeof AppPostsRoute
   '/rashifal': typeof AppRashifalRoute
   '/settings': typeof AppSettingsRoute
+  '/weather': typeof AppWeatherRoute
   '/api/cron': typeof ApiCronRoute
   '/templates/$id': typeof AppTemplatesIdRoute
   '/templates/': typeof AppTemplatesIndexRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/posts': typeof AppPostsRoute
   '/rashifal': typeof AppRashifalRoute
   '/settings': typeof AppSettingsRoute
+  '/weather': typeof AppWeatherRoute
   '/api/cron': typeof ApiCronRoute
   '/': typeof AppIndexRoute
   '/templates/$id': typeof AppTemplatesIdRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/_app/posts': typeof AppPostsRoute
   '/_app/rashifal': typeof AppRashifalRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/weather': typeof AppWeatherRoute
   '/api/cron': typeof ApiCronRoute
   '/_app/': typeof AppIndexRoute
   '/_app/templates/$id': typeof AppTemplatesIdRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/posts'
     | '/rashifal'
     | '/settings'
+    | '/weather'
     | '/api/cron'
     | '/templates/$id'
     | '/templates/'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/posts'
     | '/rashifal'
     | '/settings'
+    | '/weather'
     | '/api/cron'
     | '/'
     | '/templates/$id'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/_app/posts'
     | '/_app/rashifal'
     | '/_app/settings'
+    | '/_app/weather'
     | '/api/cron'
     | '/_app/'
     | '/_app/templates/$id'
@@ -256,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/weather': {
+      id: '/_app/weather'
+      path: '/weather'
+      fullPath: '/weather'
+      preLoaderRoute: typeof AppWeatherRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/cron': {
       id: '/api/cron'
       path: '/api/cron'
@@ -288,6 +307,7 @@ interface AppRouteChildren {
   AppPostsRoute: typeof AppPostsRoute
   AppRashifalRoute: typeof AppRashifalRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppWeatherRoute: typeof AppWeatherRoute
   AppIndexRoute: typeof AppIndexRoute
   AppTemplatesIdRoute: typeof AppTemplatesIdRoute
   AppTemplatesIndexRoute: typeof AppTemplatesIndexRoute
@@ -301,6 +321,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPostsRoute: AppPostsRoute,
   AppRashifalRoute: AppRashifalRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppWeatherRoute: AppWeatherRoute,
   AppIndexRoute: AppIndexRoute,
   AppTemplatesIdRoute: AppTemplatesIdRoute,
   AppTemplatesIndexRoute: AppTemplatesIndexRoute,

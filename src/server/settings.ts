@@ -13,12 +13,28 @@ export interface Settings {
   /** Custom template ids; empty uses the built-in design. */
   rashifalSignTemplateId: string
   rashifalCoverTemplateId: string
+  weatherPlaceNp: string
+  weatherPlaceEn: string
+  weatherLat: string
+  weatherLon: string
+  weatherCaption: string
+  weatherHashtags: string
+  weatherTemplateId: string
 }
 
 // The Nepali Patro credit is appended automatically to every rashifal caption.
 export const DEFAULT_RASHIFAL_CAPTION = `🌞 {heading} — {subtitle}
 
 {rashifal}
+
+{hashtags}`
+
+// The Open-Meteo credit is appended automatically to every weather caption.
+export const DEFAULT_WEATHER_CAPTION = `{slot_emoji} {slot_title} — {place}, {date_bs}
+
+{summary}
+
+{details}
 
 {hashtags}`
 
@@ -33,6 +49,13 @@ const DEFAULTS: Settings = {
   rashifalCaption: DEFAULT_RASHIFAL_CAPTION,
   rashifalSignTemplateId: '',
   rashifalCoverTemplateId: '',
+  weatherPlaceNp: 'दमक',
+  weatherPlaceEn: 'Damak',
+  weatherLat: '26.6641',
+  weatherLon: '87.6989',
+  weatherCaption: DEFAULT_WEATHER_CAPTION,
+  weatherHashtags: '#DamakBanda #Damak #मौसम #Weather #Jhapa',
+  weatherTemplateId: '',
 }
 
 export async function getSettings(): Promise<Settings> {

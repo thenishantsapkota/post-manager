@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
 import { AlertCircle, CheckCircle2, Loader2, X } from 'lucide-react'
 import type { PostStatus } from '#/lib/types'
 
@@ -62,13 +62,7 @@ export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLText
   return <textarea className={cx(fieldClass, 'py-2 leading-relaxed', className)} {...rest} />
 }
 
-export function Select({ className, children, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <select className={cx(fieldClass, 'h-10 pr-8', className)} {...rest}>
-      {children}
-    </select>
-  )
-}
+export { Select } from './select'
 
 export function Field({
   label,
@@ -328,6 +322,84 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       </div>
     </ToastContext.Provider>
   )
+}
+
+// ---------------------------------------------------------------------------
+// Confirm dialog (replaces window.confirm)
+// ---------------------------------------------------------------------------
+
+export interface ConfirmOptions {
+  title: string
+  message?: ReactNode
+  confirmLabel?: string
+  cancelLabel?: string
+  /** danger: red confirm button for destructive actions */
+  tone?: 'danger' | 'primary'
+}
+
+type ConfirmFn = (opts: ConfirmOptions) => Promise<boolean>
+const ConfirmContext = createContext<ConfirmFn>(() => Promise.resolve(false))
+
+export function ConfirmProvider({ children }: { children: ReactNode }) {
+  const [req, setReq] = useState<(ConfirmOptions & { resolve: (v: boolean) => void }) | null>(null)
+  const confirmBtn = useRef<HTMLButtonElement>(null)
+
+  const confirm = useCallback<ConfirmFn>(
+    (opts) =>
+      new Promise<boolean>((resolve) => {
+        setReq((prev) => {
+          prev?.resolve(false)
+          return { ...opts, resolve }
+        })
+      }),
+    [],
+  )
+
+  const finish = useCallback((result: boolean) => {
+    setReq((cur) => {
+      cur?.resolve(result)
+      return null
+    })
+  }, [])
+
+  useEffect(() => {
+    if (req) requestAnimationFrame(() => confirmBtn.current?.focus())
+  }, [req])
+
+  return (
+    <ConfirmContext.Provider value={confirm}>
+      {children}
+      <Modal
+        open={!!req}
+        onClose={() => finish(false)}
+        title={req?.title ?? ''}
+        footer={
+          <>
+            <Button onClick={() => finish(false)}>{req?.cancelLabel ?? 'Cancel'}</Button>
+            <button
+              ref={confirmBtn}
+              type="button"
+              onClick={() => finish(true)}
+              className={cx(
+                'inline-flex h-10 items-center justify-center rounded-lg px-4 text-[15px] font-semibold text-white transition-opacity hover:opacity-90',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+                req?.tone === 'danger' ? 'bg-bad' : 'bg-accent text-accent-fg',
+              )}
+            >
+              {req?.confirmLabel ?? 'Confirm'}
+            </button>
+          </>
+        }
+      >
+        {req?.message && <div className="text-[15px] leading-relaxed text-muted">{req.message}</div>}
+      </Modal>
+    </ConfirmContext.Provider>
+  )
+}
+
+/** `const confirm = useConfirm(); if (await confirm({ title: 'Delete?' })) …` */
+export function useConfirm() {
+  return useContext(ConfirmContext)
 }
 
 export function errorMessage(err: unknown) {

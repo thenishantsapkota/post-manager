@@ -1,7 +1,7 @@
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { Bot, CloudSun, Pencil, Play, Plus, Sparkles, Trash2 } from 'lucide-react'
-import { Badge, Button, Card, EmptyState, Field, Input, Modal, PageHeader, Select, Toggle, cx, useAction } from '#/components/ui'
+import { Badge, Button, Card, EmptyState, Field, Input, Modal, PageHeader, Select, Toggle, cx, useAction, useConfirm } from '#/components/ui'
 import {
   deleteAutomationFn,
   listAutomationsFn,
@@ -101,6 +101,7 @@ const PRESETS: Array<{ label: string; hint: string; draft: Omit<Draft, 'id'> }> 
 ]
 
 function AutomationsPage() {
+  const confirm = useConfirm()
   const { automations, collections } = Route.useLoaderData()
   const router = useRouter()
   const { busy, run } = useAction()
@@ -183,7 +184,7 @@ function AutomationsPage() {
                     icon={<Play className="size-4" />}
                     loading={busy === `run-${a.id}`}
                     onClick={async () => {
-                      if (!confirm('Run this now? It will create a post and publish it immediately.')) return
+                      if (!(await confirm({ title: `Run “${a.name}” now?`, message: 'This creates a post and publishes it to Facebook straight away.', confirmLabel: 'Run and publish' }))) return
                       await run(`run-${a.id}`, () => runAutomationNowFn({ data: { id: a.id } }), 'Automation ran. Check Posts for the result.')
                       await router.invalidate()
                     }}
@@ -197,7 +198,7 @@ function AutomationsPage() {
                     icon={<Trash2 className="size-4" />}
                     aria-label="Delete"
                     onClick={async () => {
-                      if (!confirm(`Delete “${a.name}”?`)) return
+                      if (!(await confirm({ title: `Delete “${a.name}”?`, message: 'It stops running. Posts it already made are kept.', confirmLabel: 'Delete', tone: 'danger' }))) return
                       await run('del', () => deleteAutomationFn({ data: { id: a.id } }), 'Automation deleted')
                       await router.invalidate()
                     }}

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Crop, Images, Trash2 } from 'lucide-react'
 import { ImageEditor } from '#/components/image-editor'
 import { UploadButton } from '#/components/media-picker'
-import { Button, Card, EmptyState, PageHeader, Tabs, mediaUrl, useAction } from '#/components/ui'
+import { Button, Card, EmptyState, PageHeader, Tabs, mediaUrl, useAction, useConfirm } from '#/components/ui'
 import { deleteMediaFn, listMediaFn } from '#/functions/media.functions'
 import { getSettingsFn } from '#/functions/settings.functions'
 import { formatNpt } from '#/lib/time'
@@ -26,6 +26,7 @@ function formatBytes(n: number) {
 }
 
 function MediaPage() {
+  const confirm = useConfirm()
   const { media, settings } = Route.useLoaderData()
   const { kind = 'upload' } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
@@ -73,7 +74,7 @@ function MediaPage() {
                     aria-label="Delete"
                     icon={<Trash2 className="size-3.5" />}
                     onClick={async () => {
-                      if (!confirm('Delete this image? Posts and templates that use it will lose it.')) return
+                      if (!(await confirm({ title: 'Delete this image?', message: 'Posts and templates that use it will lose it.', confirmLabel: 'Delete', tone: 'danger' }))) return
                       await run('del', () => deleteMediaFn({ data: { id: m.id } }), 'Image deleted')
                       await router.invalidate()
                     }}

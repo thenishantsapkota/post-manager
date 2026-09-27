@@ -1,7 +1,7 @@
 import { Link, createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { Bot, CalendarClock, ExternalLink, FileText, Pencil, RotateCcw, Send, Trash2 } from 'lucide-react'
-import { Badge, Button, Card, EmptyState, PageHeader, StatusBadge, Tabs, mediaUrl, useAction } from '#/components/ui'
+import { Badge, Button, Card, EmptyState, PageHeader, StatusBadge, Tabs, mediaUrl, useAction, useConfirm } from '#/components/ui'
 import { deletePostFn, listPostsFn, publishNowFn, unschedulePostFn } from '#/functions/posts.functions'
 import { formatNpt, formatRelative } from '#/lib/time'
 import type { PostStatus } from '#/lib/types'
@@ -19,6 +19,7 @@ export const Route = createFileRoute('/_app/posts')({
 })
 
 function PostsPage() {
+  const confirm = useConfirm()
   const posts = Route.useLoaderData()
   const { status = 'all' } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
@@ -118,9 +119,13 @@ function PostsPage() {
                         variant="ghost"
                         aria-label="Delete"
                         icon={<Trash2 className="size-4" />}
-                        onClick={() => {
-                          const msg = p.status === 'published' ? 'Remove this post from the app? (It stays on Facebook.)' : 'Delete this post?'
-                          if (confirm(msg)) act(`del-${p.id}`, () => deletePostFn({ data: { id: p.id } }), 'Deleted')
+                        onClick={async () => {
+                          const ok = await confirm(
+                            p.status === 'published'
+                              ? { title: 'Remove this post from the app?', message: 'It stays on Facebook; only the record here is removed.', confirmLabel: 'Remove', tone: 'danger' }
+                              : { title: 'Delete this post?', message: p.status === 'scheduled' ? 'It will not be published.' : undefined, confirmLabel: 'Delete', tone: 'danger' },
+                          )
+                          if (ok) act(`del-${p.id}`, () => deletePostFn({ data: { id: p.id } }), 'Deleted')
                         }}
                       />
                     )}

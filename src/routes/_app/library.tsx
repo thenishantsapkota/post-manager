@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { ImagePlus, Library, Palette, Pencil, Plus, Trash2 } from 'lucide-react'
 import { CardDesigner } from '#/components/card-designer'
 import { MediaPicker } from '#/components/media-picker'
-import { Badge, Button, Card, CardHeader, EmptyState, Field, Input, Modal, PageHeader, Textarea, Toggle, mediaUrl, useAction } from '#/components/ui'
+import { Badge, Button, Card, CardHeader, EmptyState, Field, Input, Modal, PageHeader, Textarea, Toggle, mediaUrl, useAction, useConfirm } from '#/components/ui'
 import { deleteLibraryItemFn, listLibraryFn, saveLibraryItemFn } from '#/functions/library.functions'
 import { formatRelative } from '#/lib/time'
 import type { CardSpec } from '#/lib/types'
@@ -24,6 +24,7 @@ type Draft = {
 }
 
 function LibraryPage() {
+  const confirm = useConfirm()
   const items = Route.useLoaderData()
   const router = useRouter()
   const { run } = useAction()
@@ -89,7 +90,7 @@ function LibraryPage() {
                       icon={<Trash2 className="size-4" />}
                       aria-label="Delete"
                       onClick={async () => {
-                        if (!confirm('Delete this item?')) return
+                        if (!(await confirm({ title: 'Delete this library item?', message: 'Automations will stop posting it.', confirmLabel: 'Delete', tone: 'danger' }))) return
                         await run('del', () => deleteLibraryItemFn({ data: { id: it.id } }), 'Deleted')
                         await router.invalidate()
                       }}

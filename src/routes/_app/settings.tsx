@@ -2,7 +2,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { CheckCircle2, ExternalLink, ImagePlus, KeyRound, PlugZap, Unplug } from 'lucide-react'
 import { MediaPicker } from '#/components/media-picker'
-import { Badge, Button, Card, CardHeader, Field, Input, PageHeader, Textarea, mediaUrl, useAction } from '#/components/ui'
+import { Badge, Button, Card, CardHeader, Field, Input, PageHeader, Textarea, mediaUrl, useAction, useConfirm } from '#/components/ui'
 import {
   connectPageFn,
   disconnectPageFn,
@@ -37,6 +37,7 @@ function SettingsPage() {
 type S = Awaited<ReturnType<typeof getSettingsFn>>
 
 function FacebookCard({ s }: { s: S }) {
+  const confirm = useConfirm()
   const router = useRouter()
   const { busy, run } = useAction()
   const [pageId, setPageId] = useState(s.fbPageId)
@@ -91,7 +92,7 @@ function FacebookCard({ s }: { s: S }) {
                   variant="danger"
                   icon={<Unplug className="size-4" />}
                   onClick={async () => {
-                    if (!confirm('Disconnect the page? Scheduled posts will fail until you reconnect.')) return
+                    if (!(await confirm({ title: 'Disconnect the Facebook page?', message: 'Scheduled posts and automations will fail until you connect it again.', confirmLabel: 'Disconnect', tone: 'danger' }))) return
                     await run('disc', () => disconnectPageFn(), 'Disconnected')
                     await router.invalidate()
                   }}

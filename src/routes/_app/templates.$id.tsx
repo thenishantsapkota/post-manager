@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { MediaPicker } from '#/components/media-picker'
 import { ZodiacIcon } from '#/components/zodiac-icon'
-import { Badge, Button, Card, Field, Input, Modal, Select, Spinner, Textarea, Toggle, cx, mediaUrl, useAction } from '#/components/ui'
+import { Badge, Button, Card, Field, Input, Modal, Select, Spinner, Textarea, Toggle, cx, mediaUrl, useAction, useConfirm } from '#/components/ui'
 import { getTemplateFn, previewTemplateFn, saveTemplateFn } from '#/functions/templates.functions'
 import { SIGNS } from '#/lib/signs'
 import { KIND_LABELS } from '#/lib/template-presets'
@@ -33,6 +33,7 @@ export const Route = createFileRoute('/_app/templates/$id')({
 type Handle = 'move' | 'nw' | 'ne' | 'sw' | 'se'
 
 function TemplateEditorPage() {
+  const confirm = useConfirm()
   const loaded = Route.useLoaderData()
   const router = useRouter()
   const { id, ...initial } = loaded
@@ -47,7 +48,13 @@ function TemplateEditorPage() {
   const { busy, run } = useAction()
 
   const dirty = JSON.stringify(tpl) !== savedJson
-  useBlocker({ shouldBlockFn: () => dirty && !confirm('You have unsaved changes. Leave anyway?'), enableBeforeUnload: () => dirty })
+  useBlocker({
+    shouldBlockFn: async () =>
+      dirty &&
+      !(await confirm({ title: 'Leave without saving?', message: 'Your changes to this template will be lost.', confirmLabel: 'Leave', cancelLabel: 'Keep editing', tone: 'danger' })),
+    // Closing the tab can only show the browser's own prompt.
+    enableBeforeUnload: () => dirty,
+  })
 
   const selected = tpl.layers.find((l) => l.id === selectedId) ?? null
   const samples = useMemo(() => sampleVars(tpl.kind), [tpl.kind])

@@ -2,7 +2,7 @@ import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Copy, ImagePlus, Palette, Plus, Trash2 } from 'lucide-react'
 import { uploadFiles } from '#/components/media-picker'
-import { Badge, Button, Card, EmptyState, Field, Input, Modal, PageHeader, Select, cx, mediaUrl, useAction } from '#/components/ui'
+import { Badge, Button, Card, EmptyState, Field, Input, Modal, PageHeader, Select, cx, mediaUrl, useAction, useConfirm } from '#/components/ui'
 import { deleteTemplateFn, duplicateTemplateFn, listTemplatesFn, saveTemplateFn } from '#/functions/templates.functions'
 import { KIND_LABELS, SIZE_PRESETS, starterLayers } from '#/lib/template-presets'
 import type { TemplateKind } from '#/lib/types'
@@ -14,6 +14,7 @@ export const Route = createFileRoute('/_app/templates/')({
 })
 
 function TemplatesPage() {
+  const confirm = useConfirm()
   const templates = Route.useLoaderData()
   const router = useRouter()
   const { busy, run } = useAction()
@@ -76,7 +77,7 @@ function TemplatesPage() {
                     variant="ghost"
                     icon={<Trash2 className="size-4" />}
                     onClick={async () => {
-                      if (!confirm(`Delete “${t.name}”?`)) return
+                      if (!(await confirm({ title: `Delete “${t.name}”?`, message: t.isRashifalDefault ? 'This template is in use; posts will switch to the built-in design.' : 'This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' }))) return
                       await run(`del-${t.id}`, () => deleteTemplateFn({ data: { id: t.id } }), 'Template deleted')
                       await router.invalidate()
                     }}
